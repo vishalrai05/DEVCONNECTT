@@ -105,6 +105,9 @@ export default function HackathonCard({
 
         <div className="mt-4">
           <CountdownTimer deadline={hackathon.registrationDeadline} compact />
+          {hackathon.registrationDeadlineIsEstimated ? (
+            <p className="mt-1 text-[10px] text-muted">Registration deadline estimated from event start</p>
+          ) : null}
         </div>
 
         <div className="mt-auto pt-4">

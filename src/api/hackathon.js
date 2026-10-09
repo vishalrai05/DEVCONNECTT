@@ -61,6 +61,12 @@ export const deleteHackathon = async (id) => {
   return data
 }
 
+/** POST /api/hackathons/sync/eventbrite — admin provider import */
+export const syncEventbriteHackathons = async () => {
+  const { data } = await api.post('/hackathons/sync/eventbrite')
+  return data
+}
+
 /** POST /api/hackathons/:id/bookmark */
 export const bookmarkHackathon = async (id) => {
   const { data } = await api.post(`/hackathons/${id}/bookmark`)

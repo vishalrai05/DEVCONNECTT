@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { UsersRound, Sparkles } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
@@ -23,9 +23,11 @@ import { emptyMatchFilters } from '../utils/matching'
 export default function FindTeammates() {
   const { profile } = useProfile()
   const { refresh: refreshNotifications } = useNotifications()
+  const [searchParams] = useSearchParams()
+  const initialSkills = searchParams.get('skills') || ''
 
-  const [filters, setFilters] = useState(emptyMatchFilters())
-  const [skillsDebounced, setSkillsDebounced] = useState('')
+  const [filters, setFilters] = useState(() => ({ ...emptyMatchFilters(), skills: initialSkills }))
+  const [skillsDebounced, setSkillsDebounced] = useState(initialSkills)
   const [recommendations, setRecommendations] = useState([])
   const [pagination, setPagination] = useState({ page: 1, total: 0, hasMore: false })
   const [loading, setLoading] = useState(true)

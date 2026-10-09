@@ -14,7 +14,7 @@
 import mongoose from 'mongoose'
 
 export const HACKATHON_MODES = ['online', 'offline', 'hybrid']
-export const HACKATHON_DIFFICULTIES = ['beginner', 'intermediate', 'advanced']
+export const HACKATHON_DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'unspecified']
 
 /** Canonical domains used by filters + admin form */
 export const HACKATHON_DOMAINS = [
@@ -58,6 +58,10 @@ const hackathonSchema = new mongoose.Schema(
     registrationDeadline: {
       type: Date,
       required: [true, 'Registration deadline is required'],
+    },
+    registrationDeadlineIsEstimated: {
+      type: Boolean,
+      default: false,
     },
     mode: {
       type: String,
@@ -127,6 +131,32 @@ const hackathonSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    source: {
+      type: String,
+      enum: ['manual', 'eventbrite'],
+      default: 'manual',
+    },
+    externalId: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    externalKey: {
+      type: String,
+      default: undefined,
+      trim: true,
+      unique: true,
+      sparse: true,
+    },
+    externalUrl: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    lastSyncedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 )
@@ -137,6 +167,7 @@ hackathonSchema.index({ registrationDeadline: 1 })
 hackathonSchema.index({ startDate: 1 })
 hackathonSchema.index({ prizePool: -1 })
 hackathonSchema.index({ isFeatured: -1, createdAt: -1 })
+hackathonSchema.index({ source: 1, lastSyncedAt: -1 })
 
 /**
  * Instance helper — registration still open?

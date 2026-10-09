@@ -53,6 +53,7 @@ Backend variables are documented in [server/.env.example](server/.env.example):
 - `JWT_SECRET` (32+ random characters in production)
 - `CLIENT_URL` (the exact HTTPS frontend origin in production)
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- Optional `EVENTBRITE_TOKEN` and `EVENTBRITE_ORGANIZATION_ID` for syncing live events owned by an Eventbrite organization. Configure both only in `server/.env`; the token must never be added to frontend environment variables.
 
 The frontend optionally uses `VITE_API_URL`, documented in [.env.example](.env.example). Never commit real `.env` files, credentials, JWTs, or API keys.
 
@@ -81,6 +82,8 @@ The backend tests cover deterministic matching and schema validation for profile
 Build the frontend with `npm run build` and serve `dist/` from a static hosting provider. Deploy the backend as a persistent Node.js service with WebSocket support and run `npm start --prefix server`. Use a managed MongoDB deployment and Cloudinary in production.
 
 Set `NODE_ENV=production`, a real `MONGO_URI`, a long random `JWT_SECRET`, and the exact HTTPS `CLIENT_URL`. The backend validates these settings before listening, enables security headers, restricts CORS, and applies rate limits to authentication, requests, and chat history. The deployment platform must support long-lived Socket.IO connections and configure HTTPS termination correctly.
+
+For Eventbrite sync, configure a server-side Eventbrite private token and organization ID, then use **Sync Eventbrite** on the admin hackathons page. The importer only reads live, current/future events from that organization and upserts them by Eventbrite event ID. Eventbrite does not provide this app's prize, team size, skill, or difficulty data; those fields are left unspecified/defaulted, and estimated registration deadlines are labeled in the UI.
 
 ## Future Improvements
 

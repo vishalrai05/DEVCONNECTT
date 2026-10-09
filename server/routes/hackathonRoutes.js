@@ -21,6 +21,7 @@ import {
   createHackathon,
   updateHackathon,
   deleteHackathon,
+  syncEventbrite,
   bookmarkHackathon,
   unbookmarkHackathon,
 } from '../controllers/hackathonController.js'
@@ -35,6 +36,7 @@ router.get('/recommended', protect, getRecommendedHackathons)
 
 // Admin CRUD
 router.post('/', protect, adminOnly, createHackathon)
+router.post('/sync/eventbrite', protect, adminOnly, syncEventbrite)
 
 // Bookmarks — must be before generic /:id GET? Actually bookmark uses POST/DELETE
 router.post('/:id/bookmark', protect, bookmarkHackathon)

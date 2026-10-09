@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
-    "test": "node --test services/matchingService.test.js models/productionValidation.test.js utils/generateToken.test.js",
+    "test": "node --test services/matchingService.test.js services/eventbriteService.test.js models/productionValidation.test.js utils/generateToken.test.js",
     "test:matching": "node --test services/matchingService.test.js",
     "seed:hackathons": "node scripts/seedHackathons.js"
   },

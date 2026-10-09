@@ -15,7 +15,9 @@ const STYLES = {
 
 export default function DifficultyBadge({ difficulty, className = '' }) {
   const key = String(difficulty || '').toLowerCase()
-  const label = key ? key.charAt(0).toUpperCase() + key.slice(1) : '—'
+  const label = key === 'unspecified'
+    ? 'Not specified'
+    : key ? key.charAt(0).toUpperCase() + key.slice(1) : '—'
 
   return (
     <span

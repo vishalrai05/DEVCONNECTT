@@ -15,6 +15,7 @@ export const HACKATHON_DIFFICULTIES = [
   { value: 'beginner', label: 'Beginner' },
   { value: 'intermediate', label: 'Intermediate' },
   { value: 'advanced', label: 'Advanced' },
+  { value: 'unspecified', label: 'Not specified' },
 ]
 
 export const HACKATHON_DOMAINS = [

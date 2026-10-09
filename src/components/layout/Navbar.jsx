@@ -22,6 +22,7 @@ export default function Navbar() {
     location.pathname === '/login' ||
     location.pathname === '/signup' ||
     location.pathname.startsWith('/dashboard') ||
+    location.pathname.startsWith('/find-teammates') ||
     location.pathname.startsWith('/profile') ||
     location.pathname.startsWith('/teams') ||
     location.pathname.startsWith('/hackathons') ||

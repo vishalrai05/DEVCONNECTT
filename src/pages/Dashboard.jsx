@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { CalendarClock, Check, MessageCircle, Pencil, Share2, UserRound, X } from 'lucide-react'
+import { CalendarClock, Check, MessageCircle, Pencil, Share2, UserRound, Users, X } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import GradientButton from '../components/GradientButton'
 import ProfileCard from '../components/profile/ProfileCard'
@@ -229,6 +229,169 @@ export default function Dashboard() {
       title="Dashboard"
       description="Your teams, requests, recommendations, and activity in one place."
     >
+      <section className="dashboard-welcome mb-4 flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-md border border-app px-5 py-5 sm:px-7">
+        <div className="relative z-10">
+          <p className="text-xs font-semibold uppercase text-[var(--accent)]">Your workspace</p>
+          <h2 className="mt-1 font-display text-2xl font-semibold text-app sm:text-3xl">
+            Good to see you, {profile?.name?.split(' ')[0] || 'Developer'}
+          </h2>
+          <p className="mt-1 text-sm text-muted">Find your people. Build something worth showing.</p>
+        </div>
+        <GradientButton to="/find-teammates" className="relative z-10 !rounded-md !text-sm">
+          Find teammates
+        </GradientButton>
+      </section>
+
+      <section className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {[
+          { label: 'Matches', value: dashboardLoading ? '—' : matchRecommendations.length, icon: UserRound, tone: 'green' },
+          { label: 'Requests', value: dashboardLoading ? '—' : incomingRequests.length + outgoingAll.length, icon: MessageCircle, tone: 'pink' },
+          { label: 'Teams', value: dashboardLoading ? '—' : myTeams.length, icon: Users, tone: 'orange' },
+          { label: 'Notifications', value: unreadCount, icon: CalendarClock, tone: 'green' },
+        ].map(({ label, value, icon: Icon, tone }) => (
+          <div key={label} className="flex items-center gap-3 rounded-md border border-app bg-[var(--surface)] px-3 py-3 sm:px-4">
+            <span className={`dashboard-stat-icon dashboard-stat-${tone}`}><Icon className="h-4 w-4" /></span>
+            <span className="min-w-0">
+              <span className="block font-display text-xl font-semibold leading-none text-app">{value}</span>
+              <span className="mt-1 block truncate text-[11px] text-muted">{label}</span>
+            </span>
+          </div>
+        ))}
+      </section>
+
+      {dashboardError ? <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{dashboardError}</p> : null}
+
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_290px]">
+        <div className="min-w-0 space-y-5">
+          <section>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-display text-lg font-semibold text-app">Recommended developers</h2>
+                <p className="text-xs text-muted">People with skills that complement yours.</p>
+              </div>
+              <Link to="/find-teammates" className="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline">View all →</Link>
+            </div>
+            {dashboardLoading ? <div className="h-40 animate-pulse rounded-md bg-[var(--card)]" /> : matchRecommendations.length ? (
+              <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+                {matchRecommendations.slice(0, 3).map(({ user: matchUser, matchScore, reason }) => (
+                  <article key={matchUser?._id} className="dashboard-panel min-w-0 rounded-md border border-app p-4">
+                    <div className="flex items-center gap-3">
+                      <MemberAvatar user={matchUser} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-semibold text-app">{matchUser?.name}</h3>
+                        <p className="truncate text-xs text-muted">{matchUser?.preferredRole || 'Developer'}</p>
+                      </div>
+                      <span className="shrink-0 rounded-sm bg-[var(--primary)]/15 px-2 py-1 text-[10px] font-semibold text-[var(--accent)]">{matchScore}% match</span>
+                    </div>
+                    <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-muted">{reason}</p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {(matchUser?.skills || []).slice(0, 3).map((skill) => <SkillChip key={skill} skill={skill} animated={false} />)}
+                    </div>
+                    <Link to={`/profile/${matchUser?._id}`} className="mt-4 inline-flex text-xs font-semibold text-[var(--accent)] hover:underline">View profile →</Link>
+                  </article>
+                ))}
+              </div>
+            ) : <div className="rounded-md border border-dashed border-app px-4 py-6 text-sm text-muted">Complete your profile to get teammate recommendations.</div>}
+          </section>
+
+          <section>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-display text-lg font-semibold text-app">Hackathons for you</h2>
+                <p className="text-xs text-muted">Events that fit your interests and skills.</p>
+              </div>
+              <Link to="/hackathons" className="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline">Browse all →</Link>
+            </div>
+            {eventsLoading ? <div className="h-36 animate-pulse rounded-md bg-[var(--card)]" /> : recommended.length ? (
+              <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+                {recommended.slice(0, 3).map((hackathon) => <HackathonCard key={hackathon._id} hackathon={hackathon} />)}
+              </div>
+            ) : <div className="rounded-md border border-dashed border-app px-4 py-6 text-sm text-muted">No recommendations yet. Browse hackathons to find your next build.</div>}
+          </section>
+
+          {incomingRequests.length ? (
+            <section>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold text-app">Incoming team requests</h2>
+                <Link to="/my-teams" className="text-xs font-medium text-[var(--accent)] hover:underline">Manage →</Link>
+              </div>
+              <div className="space-y-2">
+                {incomingRequests.slice(0, 3).map((request) => <DashboardRequest key={request._id} request={request} incoming onAction={handleRequestAction} actionLoading={requestAction === request._id} />)}
+              </div>
+            </section>
+          ) : null}
+        </div>
+
+        <aside className="space-y-4">
+          <section className="dashboard-panel rounded-md border border-app p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-app">Your profile</h2>
+              <Link to="/profile/edit" className="text-[11px] font-medium text-[var(--accent)] hover:underline">Edit profile</Link>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-app bg-[var(--card)]">
+                {profile?.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-[var(--accent)]">{getInitials(profile?.name)}</span>}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-app">{profile?.name}</p>
+                <p className="truncate text-xs text-muted">{profile?.preferredRole || 'Developer'}</p>
+                {profile?.college ? <p className="truncate text-[11px] text-muted">{profile.college}</p> : null}
+              </div>
+            </div>
+            <div className="mt-4"><ProfileCompletion profile={profile} /></div>
+            <p className="mb-2 mt-4 text-[10px] font-semibold uppercase text-muted">Top skills</p>
+            <div className="flex flex-wrap gap-1.5">
+              {profile?.skills?.length ? profile.skills.slice(0, 5).map((skill) => <SkillChip key={skill} skill={skill} animated={false} />) : <Link to="/profile/edit" className="text-xs text-[var(--accent)]">Add your skills →</Link>}
+            </div>
+          </section>
+
+          <section className="dashboard-panel rounded-md border border-app p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-app">Your teams</h2>
+              <Link to="/my-teams" className="text-[11px] font-medium text-[var(--accent)] hover:underline">View all</Link>
+            </div>
+            {dashboardLoading ? <div className="h-14 animate-pulse rounded bg-[var(--card)]" /> : myTeams.length ? (
+              <div className="space-y-3">
+                {myTeams.slice(0, 3).map((team) => (
+                  <Link key={team._id} to={`/teams/${team._id}`} className="flex items-center justify-between gap-3 border-b border-app pb-3 last:border-0 last:pb-0">
+                    <span className="min-w-0"><span className="block truncate text-xs font-semibold text-app">{team.name}</span><span className="mt-1 block text-[10px] text-muted">{team.members?.length || 0} members · {team.status}</span></span>
+                    <MessageCircle className="h-4 w-4 shrink-0 text-[var(--accent)]" />
+                  </Link>
+                ))}
+              </div>
+            ) : <p className="text-xs leading-relaxed text-muted">No team yet. Meet developers and start building.</p>}
+          </section>
+
+          <section className="dashboard-panel rounded-md border border-app p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-app">Upcoming deadlines</h2>
+              <Link to="/bookmarks" className="text-[11px] font-medium text-[var(--accent)] hover:underline">Bookmarks</Link>
+            </div>
+            {eventsLoading ? <div className="h-14 animate-pulse rounded bg-[var(--card)]" /> : upcomingDeadlines.length ? (
+              <div className="space-y-3">
+                {upcomingDeadlines.slice(0, 3).map((event) => (
+                  <Link key={event._id} to={`/hackathons/${event._id}`} className="flex items-start gap-2.5">
+                    <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />
+                    <span className="min-w-0"><span className="block truncate text-xs font-medium text-app">{event.title}</span><span className="block text-[10px] text-muted">Deadline {formatDate(event.registrationDeadline)}</span></span>
+                  </Link>
+                ))}
+              </div>
+            ) : <p className="text-xs leading-relaxed text-muted">Bookmark an event to keep its deadline close.</p>}
+          </section>
+
+          <section className="dashboard-panel rounded-md border border-app p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-app">Recent messages</h2>
+              <Link to="/my-teams" className="text-[11px] font-medium text-[var(--accent)] hover:underline">View all</Link>
+            </div>
+            {unreadMessages.length ? <div className="space-y-3">{unreadMessages.slice(0, 3).map((notification) => <Link key={notification._id} to={`/teams/${notification.relatedTeam}`} className="block border-b border-app pb-3 last:border-0 last:pb-0"><p className="line-clamp-2 text-xs text-app">{notification.message}</p><p className="mt-1 text-[10px] text-muted">{timeAgo(notification.createdAt)}</p></Link>)}</div> : <p className="text-xs leading-relaxed text-muted">You&apos;re caught up on team messages.</p>}
+          </section>
+        </aside>
+      </div>
+
+      <details className="dashboard-details mt-6 rounded-md border border-app bg-[var(--surface)]">
+        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-app focus-ring">More dashboard details</summary>
+        <div className="border-t border-app p-4 sm:p-6">
       <section className="mb-8 rounded-3xl border border-app glass p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -514,6 +677,8 @@ export default function Dashboard() {
           </div>
         </section>
       ) : null}
+        </div>
+      </details>
     </AppShell>
   )
 }

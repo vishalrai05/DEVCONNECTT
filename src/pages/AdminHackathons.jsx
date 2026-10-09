@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Loader2, Pencil, Plus, Star, Trash2 } from 'lucide-react'
+import { Loader2, Pencil, Plus, RefreshCw, Star, Trash2 } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import GradientButton from '../components/GradientButton'
 import { useAuth } from '../context/AuthContext'
@@ -17,6 +17,7 @@ import {
   createHackathon,
   updateHackathon,
   deleteHackathon,
+  syncEventbriteHackathons,
   getErrorMessage,
 } from '../api/hackathon'
 import {
@@ -65,6 +66,8 @@ export default function AdminHackathons() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncSummary, setSyncSummary] = useState('')
   const [error, setError] = useState('')
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
@@ -203,6 +206,22 @@ export default function AdminHackathons() {
     }
   }
 
+  const onSyncEventbrite = async () => {
+    setSyncing(true)
+    setError('')
+    setSyncSummary('')
+    try {
+      const data = await syncEventbriteHackathons()
+      const { created, updated, skipped } = data.result
+      setSyncSummary(`Eventbrite sync: ${created} added, ${updated} updated, ${skipped} skipped.`)
+      await load()
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   return (
     <AppShell
       title="Hackathon admin"
@@ -210,10 +229,17 @@ export default function AdminHackathons() {
     >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted">{items.length} events in the catalog</p>
-        <GradientButton type="button" className="!text-sm" icon={Plus} onClick={startCreate}>
-          Add hackathon
-        </GradientButton>
+        <div className="flex flex-wrap gap-2">
+          <GradientButton type="button" variant="ghost" className="!text-sm" icon={RefreshCw} onClick={onSyncEventbrite} disabled={syncing}>
+            {syncing ? 'Syncing Eventbrite…' : 'Sync Eventbrite'}
+          </GradientButton>
+          <GradientButton type="button" className="!text-sm" icon={Plus} onClick={startCreate}>
+            Add hackathon
+          </GradientButton>
+        </div>
       </div>
+
+      {syncSummary ? <p className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-500">{syncSummary}</p> : null}
 
       {error ? (
         <p className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -394,6 +420,11 @@ export default function AdminHackathons() {
                     {h.isFeatured ? (
                       <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-500">
                         Featured
+                      </span>
+                    ) : null}
+                    {h.source === 'eventbrite' ? (
+                      <span className="rounded-full border border-[var(--accent)]/30 bg-[var(--primary)]/10 px-2 py-0.5 text-[10px] font-medium text-[var(--accent)]">
+                        Eventbrite
                       </span>
                     ) : null}
                     <span

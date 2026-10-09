@@ -4,7 +4,7 @@ import { cn } from '../utils/cn'
 
 const variants = {
   primary:
-    'btn-gradient text-white shadow-lg shadow-blue-600/25 hover:shadow-blue-500/40',
+    'btn-gradient text-white shadow-lg shadow-emerald-900/25 hover:shadow-emerald-700/30',
   secondary:
     'bg-transparent border border-app text-app hover:border-[var(--accent)] hover:text-[var(--accent)]',
   ghost:

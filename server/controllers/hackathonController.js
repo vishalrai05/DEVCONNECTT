@@ -37,6 +37,10 @@ import Hackathon, {
   HACKATHON_DOMAINS,
 } from '../models/Hackathon.js'
 import User from '../models/User.js'
+import {
+  EventbriteIntegrationError,
+  syncEventbriteHackathons,
+} from '../services/eventbriteService.js'
 
 /** Preferred role → domains that usually need that role */
 const ROLE_DOMAIN_MAP = {
@@ -526,6 +530,27 @@ export const createHackathon = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error. Please try again later.',
+    })
+  }
+}
+
+/** POST /api/hackathons/sync/eventbrite — admin */
+export const syncEventbrite = async (_req, res) => {
+  try {
+    const result = await syncEventbriteHackathons()
+    return res.status(200).json({
+      success: true,
+      message: 'Eventbrite sync completed.',
+      result,
+    })
+  } catch (error) {
+    if (error instanceof EventbriteIntegrationError) {
+      return res.status(error.statusCode).json({ success: false, message: error.message })
+    }
+    console.error('syncEventbrite error:', error)
+    return res.status(500).json({
+      success: false,
+      message: 'Eventbrite sync failed. Please try again later.',
     })
   }
 }
