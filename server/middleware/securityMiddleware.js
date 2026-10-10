@@ -5,7 +5,9 @@ const isProduction = () => process.env.NODE_ENV === 'production'
 export const sameOrigin = (req, res, next) => {
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next()
   const origin = req.get('origin')
-  if (origin && origin !== process.env.CLIENT_URL) {
+  const allowedOrigin = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '')
+
+  if (origin && origin.replace(/\/$/, '') !== allowedOrigin) {
     return res.status(403).json({ success: false, message: 'Request origin is not allowed.' })
   }
   next()

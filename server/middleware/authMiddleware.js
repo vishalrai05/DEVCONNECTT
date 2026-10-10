@@ -9,6 +9,7 @@
 
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
+import { getJwtSecret } from '../utils/generateToken.js'
 
 /**
  * Protect routes that require a logged-in user.
@@ -27,7 +28,7 @@ export const protect = async (req, res, next) => {
     }
 
     // jwt.verify throws if the token is expired, tampered with, or signed with a different secret
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const decoded = jwt.verify(token, getJwtSecret())
 
     // Load the latest user document; omit password even though toJSON also strips it
     const user = await User.findById(decoded.id).select('-password')
@@ -61,7 +62,7 @@ export const optionalProtect = async (req, res, next) => {
     const token = req.cookies?.token
     if (!token) return next()
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const decoded = jwt.verify(token, getJwtSecret())
     const user = await User.findById(decoded.id).select('-password')
     if (user) req.user = user
   } catch {

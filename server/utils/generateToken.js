@@ -14,6 +14,10 @@
 
 import jwt from 'jsonwebtoken'
 
+const DEFAULT_JWT_SECRET = 'devconnect-development-secret'
+
+export const getJwtSecret = () => process.env.JWT_SECRET || DEFAULT_JWT_SECRET
+
 /**
  * Create a signed JWT for the given user id.
  * Payload is intentionally minimal — only the id is needed to load the user.
@@ -21,7 +25,7 @@ import jwt from 'jsonwebtoken'
 export const generateToken = (userId) => {
   return jwt.sign(
     { id: userId },
-    process.env.JWT_SECRET,
+    getJwtSecret(),
     // 7-day expiry balances convenience (stay logged in) vs security
     { expiresIn: '7d' },
   )

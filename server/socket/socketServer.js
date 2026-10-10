@@ -6,6 +6,7 @@ import Team from '../models/Team.js'
 import Message from '../models/Message.js'
 import { formatMessage } from '../controllers/messageController.js'
 import { createNotification } from '../models/Notification.js'
+import { getJwtSecret } from '../utils/generateToken.js'
 
 const roomFor = (teamId) => `team:${teamId}`
 const onlineUsers = new Map()
@@ -51,7 +52,7 @@ export const createSocketServer = (httpServer, clientUrl = 'http://localhost:517
     try {
       const token = getCookie(socket.handshake.headers.cookie, 'token')
       if (!token) return next(new Error('Authentication required.'))
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      const decoded = jwt.verify(token, getJwtSecret())
       const user = await User.findById(decoded.id).select('name avatar preferredRole')
       if (!user) return next(new Error('Authentication required.'))
       socket.data.user = publicUser(user)
